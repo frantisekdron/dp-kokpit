@@ -29,7 +29,7 @@ let KEY = null;
 async function derive(pw) {
   const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
   return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: SALT, iterations: ITER, hash: 'SHA-256' },
-    km, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+    km, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
 }
 async function fetchDec(path) {
   const r = await fetch(path, { cache: 'no-store' });
@@ -44,6 +44,7 @@ async function boot(pw) {
   err.textContent = 'dešifruji…';
   try {
     KEY = await derive(pw);
+    window.__key = KEY;
     const plain = await fetchDec('enc/bundle.enc');
     const B = JSON.parse(new TextDecoder().decode(plain));
     sessionStorage.setItem('dpfury.pw', pw);
