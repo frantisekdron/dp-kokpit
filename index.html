@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Diplomka — řídicí panel</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='25' font-size='26'>🧪</text></svg>">
+</head>
+<body>
+
+<div id="gate">
+  <div class="gc">
+    <h1>Řídicí panel diplomové práce</h1>
+    <p>Mikroplasty ve vnitřním prostředí · obsah je zašifrovaný, dešifruje se až tady v prohlížeči.</p>
+    <input type="password" id="pw" placeholder="heslo" autocomplete="current-password" autofocus>
+    <button id="go">Otevřít</button>
+    <p class="err" id="err"></p>
+  </div>
+</div>
+
+<div id="app" hidden></div>
+
+<script>
+const ITER = 210000, SALT = Uint8Array.from(atob('ZHBmdXJ5LTIwMjYtZnVyeWNob3ZhLXYy'), c => c.charCodeAt(0));
+let KEY = null;
+
+async function derive(pw) {
+  const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: SALT, iterations: ITER, hash: 'SHA-256' },
+    km, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+}
+async function fetchDec(path) {
+  const r = await fetch(path, { cache: 'no-store' });
+  if (!r.ok) throw new Error('soubor nenalezen (' + r.status + ')');
+  const buf = new Uint8Array(await r.arrayBuffer());
+  return crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(0, 12) }, KEY, buf.slice(12));
+}
+window.__dec = fetchDec;
+
+async function boot(pw) {
+  const err = document.getElementById('err');
+  err.textContent = 'dešifruji…';
+  try {
+    KEY = await derive(pw);
+    const plain = await fetchDec('enc/bundle.enc');
+    const B = JSON.parse(new TextDecoder().decode(plain));
+    sessionStorage.setItem('dpfury.pw', pw);
+
+    document.getElementById('gate').remove();
+    const app = document.getElementById('app');
+    app.hidden = false; app.innerHTML = B.ui;
+    // obsah a logika se vyhodnotí až po dešifrování
+    const s1 = document.createElement('script'); s1.textContent = B.content; document.body.appendChild(s1);
+    const s2 = document.createElement('script');
+    s2.textContent = 'const DATA = ' + JSON.stringify(B.data) + ';\n' + B.app;
+    document.body.appendChild(s2);
+  } catch (e) {
+    KEY = null;
+    err.textContent = /decrypt|operation/i.test(e.message || '') ? 'Nesprávné heslo.' : ('Chyba: ' + e.message);
+    document.getElementById('pw').select();
+  }
+}
+document.getElementById('go').onclick = () => boot(document.getElementById('pw').value);
+document.getElementById('pw').onkeydown = e => { if (e.key === 'Enter') boot(e.target.value); };
+const remembered = sessionStorage.getItem('dpfury.pw');
+if (remembered) boot(remembered);
+</script>
+</body>
+</html>
