@@ -202,3 +202,13 @@ footer{max-width:1300px;margin:0 auto;padding:0 20px 40px;color:var(--fg3);font-
 
 /* ── sdílení ── */
 .pill.me{cursor:pointer}
+
+/* ── poznámky: viditelné, každý svou ── */
+.nx{border-left:2px solid var(--vio);background:var(--bg3);border-radius:0 8px 8px 0;
+  padding:8px 11px;margin:7px 0}
+.nx.me{border-left-color:var(--acc)}
+.nxh{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:11.5px;margin-bottom:3px}
+.nxh b{font-size:12px}
+.nxh .dim{font-family:var(--mono);font-size:10.5px}
+.nxv{font-size:13px;white-space:pre-wrap;line-height:1.5}
+.nbrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
