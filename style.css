@@ -212,3 +212,7 @@ footer{max-width:1300px;margin:0 auto;padding:0 20px 40px;color:var(--fg3);font-
 .nxh .dim{font-family:var(--mono);font-size:10.5px}
 .nxv{font-size:13px;white-space:pre-wrap;line-height:1.5}
 .nbrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+
+#newver{position:sticky;top:0;z-index:120;background:var(--warn);color:#141414;
+  font:600 13px var(--sans);padding:9px 16px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}
+#newver button{background:#141414;color:#fff;border:0;padding:6px 12px;border-radius:7px;font-weight:600}
